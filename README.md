@@ -120,10 +120,10 @@ Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pa
 
 ```bash
 ├── data
-│   ├── smoke_pascal_voc
-│   │   ├── archive
-│   │   │   ├── train
-│   │   │   └── valid
+│   ├── ganoderma
+│   │   ├── train
+│   │   ├── test
+│   │   └── val
 │   └── README.md
 ├── data_configs
 │   └── smoke.yaml
@@ -152,24 +152,24 @@ Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pa
 └── train.py
 ```
 
-The content of the `smoke.yaml` should be the following:
+The content of the `ganoderma.yaml` should be the following:
 
 ```yaml
 # Images and labels direcotry should be relative to train.py
-TRAIN_DIR_IMAGES: ../../xml_od_data/smoke_pascal_voc/archive/train/images
-TRAIN_DIR_LABELS: ../../xml_od_data/smoke_pascal_voc/archive/train/annotations
+TRAIN_DIR_IMAGES: data/train
+TRAIN_DIR_LABELS: data/train
 # VALID_DIR should be relative to train.py
-VALID_DIR_IMAGES: ../../xml_od_data/smoke_pascal_voc/archive/valid/images
-VALID_DIR_LABELS: ../../xml_od_data/smoke_pascal_voc/archive/valid/annotations
+VALID_DIR_IMAGES: data/val
+VALID_DIR_LABELS: data/val
 
 # Class names.
 CLASSES: [
     '__background__',
-    'smoke'
+    'ganoderma', 'primordium'
 ]
 
 # Number of classes (object classes + 1 for background class in Faster RCNN).
-NC: 2
+NC: 3
 
 # Whether to save the predictions of the validation set while training.
 SAVE_VALID_PREDICTION_IMAGES: True
@@ -259,7 +259,7 @@ SAVING PLOTS COMPLETE...
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
-python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+torchrun --nproc_per_node=2 train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name ganoderma_training --batch 16
 ```
 
 ## Inference

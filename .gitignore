@@ -1,6 +1,8 @@
 # data/*
 !data/README.md
 # outputs/
+!outputs/last_model.pth
+!outputs/last_model_state.pth
 # inference_outputs
 # test.sh
 *__pycache__/

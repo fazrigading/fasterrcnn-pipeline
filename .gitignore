@@ -11,7 +11,7 @@
 # weights/
 
 # Weights and Biases
-# wandb/*
+wandb/*
 
 # IPython checkpoints
 .ipynb_checkpoints

@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # Load weights.
     if args['weights'] is not None:
         model = create_model(num_classes=NUM_CLASSES, coco_model=False)
-        checkpoint = torch.load(args['weights'], map_location=DEVICE)
+        checkpoint = torch.load(args['weights'], weights_only=True, map_location=DEVICE)
         model.load_state_dict(checkpoint['model_state_dict'])
         valid_dataset = create_valid_dataset(
             VALID_DIR_IMAGES, 

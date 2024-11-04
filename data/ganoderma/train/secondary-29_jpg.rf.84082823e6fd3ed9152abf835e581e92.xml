@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>secondary-29_jpg.rf.84082823e6fd3ed9152abf835e581e92.jpg</filename>
+	<path>secondary-29_jpg.rf.84082823e6fd3ed9152abf835e581e92.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>ganoderma</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>223</xmin>
+			<xmax>441</xmax>
+			<ymin>298</ymin>
+			<ymax>470</ymax>
+		</bndbox>
+	</object>
+</annotation>

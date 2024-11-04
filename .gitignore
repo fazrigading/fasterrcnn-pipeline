@@ -1,15 +1,15 @@
-data/*
+# data/*
 !data/README.md
-outputs/
-inference_outputs
-test.sh
+# outputs/
+# inference_outputs
+# test.sh
 *__pycache__/
 
 # Custom weights folder (mainly for testing).
-weights/
+# weights/
 
 # Weights and Biases
-wandb/*
+# wandb/*
 
 # IPython checkpoints
 .ipynb_checkpoints

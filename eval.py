@@ -2,7 +2,7 @@
 Run evaluation on a trained model to get mAP and class wise AP.
 
 USAGE:
-python eval.py --data data_configs/voc.yaml --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
+python eval.py --data data_configs/voc.yaml --split test --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
 """
 from datasets import (
     create_valid_dataset, create_valid_loader
@@ -29,6 +29,11 @@ if __name__ == '__main__':
         '--data', 
         default='data_configs/test_image_config.yaml',
         help='(optional) path to the data config file'
+    )
+    parser.add_argument(
+        '-s', '--split', 
+        default='val',
+        help='(optional) data split used for validation'
     )
     parser.add_argument(
         '-m', '--model', 
@@ -82,10 +87,10 @@ if __name__ == '__main__':
         data_configs = yaml.safe_load(file)
 
     # Validation settings and constants.
-    try: # Use test images if present.
+    if args['split'] == "test":
         VALID_DIR_IMAGES = data_configs['TEST_DIR_IMAGES']
         VALID_DIR_LABELS = data_configs['TEST_DIR_LABELS']
-    except: # Else use the validation images.
+    else: # Else use the validation images.
         VALID_DIR_IMAGES = data_configs['VALID_DIR_IMAGES']
         VALID_DIR_LABELS = data_configs['VALID_DIR_LABELS']
     NUM_CLASSES = data_configs['NC']

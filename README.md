@@ -322,13 +322,13 @@ python inference_video.py --track --weights outputs/training/fish_det/best_model
 Replace the required arguments according to your need.
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data data_configs/aquarium.yaml --batch 4
+!python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/ganoderma-training/best_model.pth --data data_configs/ganoderma.yaml --batch 4
 ```
 
 You can use the following command to show a table for **class-wise Average Precision** (`--verbose` additionally needed).
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data data_configs/aquarium.yaml --batch 4 --verbose
+!python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/ganoderma-training/best_model.pth --data data_configs/ganoderma.yaml --batch 4 --verbose
 ```
 
 ## A List of All Model Flags to Use With the Training Script

@@ -98,8 +98,7 @@ class CustomDataset(Dataset):
             print("\n⚠️ The following images have invalid bounding boxes and will be removed:")
             for img in problematic_images:
                 print(f"⚠️ {img}")
-
-        print(f"Removed {len(images_to_remove)} problematic images and annotations.")
+            print(f"Removed {len(images_to_remove)} problematic images and annotations.")
 
     def resize(self, im, square=False):
         if square:

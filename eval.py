@@ -117,8 +117,30 @@ if __name__ == '__main__':
     # Load weights.
     if args['weights'] is not None:
         model = create_model(num_classes=NUM_CLASSES, coco_model=False)
-        checkpoint = torch.load(args['weights'], weights_only=True, map_location=DEVICE)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        checkpoint = torch.load(args['weights'], weights_only=True, map_location=DEVICE)    
+        try:
+            # Remove the 'module.' prefix from the keys if necessary
+            state_dict = checkpoint['model_state_dict']
+            if any(key.startswith('module.') for key in state_dict.keys()):
+                print("Detected 'module.' prefix in state_dict keys. Removing prefix...")
+                new_state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
+                state_dict = new_state_dict
+
+            # Attempt to load the state_dict
+            model.load_state_dict(state_dict)
+            print("Model loaded successfully.")
+        except RuntimeError as e:
+            # Check for specific error in loading state_dict
+            if "Missing key(s) in state_dict" in str(e) or "Unexpected key(s) in state_dict" in str(e):
+                print("Warning: State dict loading encountered an issue.")
+                # Load state_dict with strict=False to ignore missing/unexpected keys
+                model.load_state_dict(state_dict, strict=False)
+                print("Model loaded with missing or unexpected keys ignored.")
+            else:
+                # If it's another error, raise it
+                raise e
+        del checkpoint
+
         valid_dataset = create_valid_dataset(
             VALID_DIR_IMAGES, 
             VALID_DIR_LABELS, 

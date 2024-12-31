@@ -412,7 +412,7 @@ def main(args):
     for epoch in range(start_epochs, NUM_EPOCHS):
         train_loss_hist.reset()
 
-        _, batch_loss_list, \
+        batch_loss_list, \
             batch_loss_cls_list, \
             batch_loss_box_reg_list, \
             batch_loss_objectness_list, \

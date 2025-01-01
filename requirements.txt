@@ -31,10 +31,10 @@ setuptools==59.5.0
 torchmetrics # Evaluation
 
 # Transformer based models.
-#vision_transformers
+vision_transformers
 
 # SAHI inference
-#sahi
+sahi
 
 # Export-----------------------------------
 # onnxruntime==1.15 # CPU execution.

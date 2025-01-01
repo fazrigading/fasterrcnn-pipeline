@@ -179,8 +179,6 @@ if __name__ == '__main__':
 
         target = []
         preds = []
-        pred_scores = []
-        target_labels = []
         counter = 0
         for images, targets in tqdm(metric_logger.log_every(data_loader, 100, header), total=len(data_loader)):
             counter += 1
@@ -201,30 +199,15 @@ if __name__ == '__main__':
                 preds_dict['boxes'] = outputs[i]['boxes'].detach().cpu()
                 preds_dict['scores'] = outputs[i]['scores'].detach().cpu()
                 preds_dict['labels'] = outputs[i]['labels'].detach().cpu()
-                pred_scores.append(preds_dict['scores'])
-                target_labels.append(true_dict['labels'])
                 preds.append(preds_dict)
                 target.append(true_dict)
             #####################################
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
 
-        # gather the stats from all processes
         metric_logger.synchronize_between_processes()
+        torch.set_num_threads(n_threads)
         metric.update(preds, target)
         metric_summary = metric.compute()
-
-        # PR-CURVE COMPUTE
-        # mcprc = MulticlassPrecisionRecallCurve(num_classes=NUM_CLASSES)
-        # pred_scores = torch.cat(pred_scores)
-        # target_labels = torch.cat(target_labels)
-        # mcprc.update(pred_scores, target_labels)
-        # fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
-        # mcprc.plot(score=True, ax=ax)
-        # plot_data_split = "test" if args['split'] == "test" else "val"
-        # fig.savefig(f"pr_curve_{plot_data_split}.png", dpi=250)
-        # plt.close(fig)
-
-        torch.set_num_threads(n_threads)
 
         return metric_summary
 

@@ -211,13 +211,11 @@ if __name__ == '__main__':
         metric.update(preds, target)
         metric_summary = metric.compute()
 
-        # PR-CURVE PLOT FEATURE
-        print("Preds: ", preds)
-        print("Target: ", target)
-        # Update and compute the precision-recall curve
-        for pred, tgt in zip(preds, target):
-            mcprc.update(pred['scores'], tgt['labels'])
-        precision, recall, thresholds = mcprc.compute()
+        # PR-CURVE COMPUTE
+        mcprc.update(preds, target)
+        # precision, recall, thresholds = mcprc.compute() # Disabled because no purpose?
+
+        # PR-CURVE PLOT
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
         mcprc.plot(score=True, ax=ax)
         plot_data_split = "test" if args['split'] == "test" else "val"

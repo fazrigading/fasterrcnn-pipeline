@@ -10,6 +10,7 @@ from datasets import (
 from models.create_fasterrcnn_model import create_model
 from torch_utils import utils
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics.classification import MulticlassPrecisionRecallCurve
 from pprint import pprint
 from tqdm import tqdm
 

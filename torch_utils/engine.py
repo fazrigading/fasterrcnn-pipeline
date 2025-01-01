@@ -1,7 +1,6 @@
 import math
 import sys
 import time
-import datetime
 from tqdm import tqdm
 
 import torch
@@ -45,13 +44,11 @@ def train_one_epoch(
     start_time = time.time()
     end = time.time()
     iter_time = utils.SmoothedValue(fmt="{avg:.4f}")
-    data_time = utils.SmoothedValue(fmt="{avg:.4f}")
     MB = 1024.0 * 1024.0
 
     # Use tqdm to create a progress bar with additional logging
     progress_bar = tqdm(data_loader, desc=header, leave=False, ncols=100)
     for i, (images, targets) in enumerate(progress_bar):
-        data_time.update(time.time() - end)
         
         images = [image.to(device) for image in images]
         targets = [{k: v.to(device).to(torch.int64) for k, v in t.items()} for t in targets]
@@ -97,17 +94,12 @@ def train_one_epoch(
         iter_time.update(time.time() - end)
         end = time.time()
 
-        # Calculate ETA
-        eta_seconds = iter_time.global_avg * (len(data_loader) - i - 1)
-        eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
-
         # Update progress bar with custom metrics
         postfix = {
             "loss": f"{loss_value:.4f}",
             "lr": f"{optimizer.param_groups[0]['lr']:.6f}",
             "time": f"{iter_time.avg:.4f}",
             "data": f"{data_time.avg:.4f}",
-            "eta": eta_string
         }
         if torch.cuda.is_available():
             max_mem = torch.cuda.max_memory_allocated() / MB

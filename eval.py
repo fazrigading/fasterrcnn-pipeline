@@ -214,7 +214,7 @@ if __name__ == '__main__':
         # PR-CURVE PLOT FEATURE
         # Update and compute the precision-recall curve
         for pred, tgt in zip(preds, target):
-            pr_curve_metric.update(pred['scores'], pred['labels'], tgt['labels'])
+            pr_curve_metric.update(pred['labels'], tgt['labels'])
 
         precision, recall, thresholds = pr_curve_metric.compute()
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)

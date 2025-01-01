@@ -19,6 +19,7 @@ import yaml
 import torchvision
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -167,6 +168,7 @@ if __name__ == '__main__':
         colors=None
     ):
         metric = MeanAveragePrecision(class_metrics=args['verbose'])
+        pr_curve_metric = MulticlassPrecisionRecallCurve(num_classes=len(classes)) # pr-curve feature
         n_threads = torch.get_num_threads()
         # FIXME remove this and make paste_masks_in_image run on the GPU
         torch.set_num_threads(1)
@@ -207,6 +209,18 @@ if __name__ == '__main__':
         torch.set_num_threads(n_threads)
         metric.update(preds, target)
         metric_summary = metric.compute()
+
+        # PR-CURVE PLOT FEATURE
+        # Update and compute the precision-recall curve
+        for pred, tgt in zip(preds, target):
+            pr_curve_metric.update(pred['scores'], pred['labels'], tgt['labels'])
+
+        precision, recall, thresholds = pr_curve_metric.compute()
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
+        pr_curve_metric.plot(score=True, ax=ax)
+        fig.savefig(f"pr_curve.png", dpi=250)
+        plt.close(fig)
+
         return metric_summary
 
     stats = evaluate(

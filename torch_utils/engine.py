@@ -24,7 +24,7 @@ def train_one_epoch(
     scheduler=None
 ):
     model.train()
-    header = f"Epoch: [{epoch}]"
+    header = f"\nEpoch: [{epoch}]"
 
     # Lists to store batch losses
     batch_loss_list = []

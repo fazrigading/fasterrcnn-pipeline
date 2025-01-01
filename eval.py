@@ -169,7 +169,6 @@ if __name__ == '__main__':
         colors=None
     ):
         metric = MeanAveragePrecision(class_metrics=args['verbose'])
-        mcprc = MulticlassPrecisionRecallCurve(num_classes=NUM_CLASSES) # pr-curve feature
         n_threads = torch.get_num_threads()
         # FIXME remove this and make paste_masks_in_image run on the GPU
         torch.set_num_threads(1)
@@ -215,17 +214,15 @@ if __name__ == '__main__':
         metric_summary = metric.compute()
 
         # PR-CURVE COMPUTE
-        pred_scores = torch.cat(pred_scores)
-        target_labels = torch.cat(target_labels)
-        mcprc.update(pred_scores, target_labels)
-        # precision, recall, thresholds = mcprc.compute() # Disabled because no purpose?
-
-        # PR-CURVE PLOT
-        fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
-        mcprc.plot(score=True, ax=ax)
-        plot_data_split = "test" if args['split'] == "test" else "val"
-        fig.savefig(f"pr_curve_{plot_data_split}.png", dpi=250)
-        plt.close(fig)
+        # mcprc = MulticlassPrecisionRecallCurve(num_classes=NUM_CLASSES)
+        # pred_scores = torch.cat(pred_scores)
+        # target_labels = torch.cat(target_labels)
+        # mcprc.update(pred_scores, target_labels)
+        # fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
+        # mcprc.plot(score=True, ax=ax)
+        # plot_data_split = "test" if args['split'] == "test" else "val"
+        # fig.savefig(f"pr_curve_{plot_data_split}.png", dpi=250)
+        # plt.close(fig)
 
         torch.set_num_threads(n_threads)
 

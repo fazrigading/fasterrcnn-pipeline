@@ -49,7 +49,7 @@ def train_one_epoch(
     MB = 1024.0 * 1024.0
 
     # Use tqdm to create a progress bar with additional logging
-    progress_bar = tqdm(data_loader, desc=header, leave=False)
+    progress_bar = tqdm(data_loader, desc=header, leave=False, ncols=100)
     for i, (images, targets) in enumerate(progress_bar):
         data_time.update(time.time() - end)
         
@@ -102,24 +102,19 @@ def train_one_epoch(
         eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
 
         # Update progress bar with custom metrics
+        postfix = {
+            "loss": f"{loss_value:.4f}",
+            "lr": f"{optimizer.param_groups[0]['lr']:.6f}",
+            "time": f"{iter_time.avg:.4f}",
+            "data": f"{data_time.avg:.4f}",
+            "eta": eta_string
+        }
         if torch.cuda.is_available():
             max_mem = torch.cuda.max_memory_allocated() / MB
-            progress_bar.set_postfix(
-                loss=f"{loss_value:.4f}",
-                lr=optimizer.param_groups[0]["lr"],
-                time=iter_time.avg,
-                data=data_time.avg,
-                eta=eta_string,
-                max_mem=f"{max_mem:.0f} MB"
-            )
-        else:
-            progress_bar.set_postfix(
-                loss=f"{loss_value:.4f}",
-                lr=optimizer.param_groups[0]["lr"],
-                time=iter_time.avg,
-                data=data_time.avg,
-                eta=eta_string
-            )
+            postfix["max_mem"] = f"{max_mem:.0f} MB"
+            torch.cuda.reset_peak_memory_stats()  # Reset peak memory stats
+
+        progress_bar.set_postfix(postfix)
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))

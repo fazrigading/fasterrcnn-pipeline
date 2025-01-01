@@ -212,7 +212,10 @@ if __name__ == '__main__':
         metric_summary = metric.compute()
 
         # PR-CURVE COMPUTE
-        mcprc.update(preds, target)
+        pred_scores = torch.cat([pred['scores'] for pred in preds], dim=0)
+        pred_labels = torch.cat([pred['labels'] for pred in preds], dim=0)
+        true_labels = torch.cat([target_entry['labels'] for target_entry in target], dim=0)
+        mcprc.update(pred_labels, true_labels)
         # precision, recall, thresholds = mcprc.compute() # Disabled because no purpose?
 
         # PR-CURVE PLOT

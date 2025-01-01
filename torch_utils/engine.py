@@ -47,8 +47,7 @@ def train_one_epoch(
     MB = 1024.0 * 1024.0
 
     # Use tqdm to create a progress bar with additional logging
-    progress_bar = tqdm(data_loader, desc=header, leave=False, ncols=100)
-    for i, (images, targets) in enumerate(progress_bar):
+    for i, (images, targets) in enumerate(data_loader):
         
         images = [image.to(device) for image in images]
         targets = [{k: v.to(device).to(torch.int64) for k, v in t.items()} for t in targets]
@@ -94,19 +93,17 @@ def train_one_epoch(
         iter_time.update(time.time() - end)
         end = time.time()
 
-        # Update progress bar with custom metrics
-        postfix = {
-            "loss": f"{loss_value:.4f}",
-            "lr": f"{optimizer.param_groups[0]['lr']:.6f}",
-            "time": f"{iter_time.avg:.4f}",
-            "data": f"{data_time.avg:.4f}",
-        }
-        if torch.cuda.is_available():
-            max_mem = torch.cuda.max_memory_allocated() / MB
-            postfix["max_mem"] = f"{max_mem:.0f} MB"
-            torch.cuda.reset_peak_memory_stats()  # Reset peak memory stats
-
-        progress_bar.set_postfix(postfix)
+        # Optionally, print progress information at a certain frequency
+        if i % print_freq == 0:
+            print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
+                  f"Loss: {loss_value:.4f}, "
+                  f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
+                  f"Time: {iter_time.avg:.4f}, "
+                  f"Data: {data_time.avg:.4f}")
+            if torch.cuda.is_available():
+                max_mem = torch.cuda.max_memory_allocated() / MB
+                print(f"Max Memory: {max_mem:.0f} MB")
+                torch.cuda.reset_peak_memory_stats()  # Reset peak memory stats
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))

@@ -423,7 +423,7 @@ def main(args):
             DEVICE, 
             epoch, 
             train_loss_hist,
-            print_freq=100,
+            print_freq=1,
             scheduler=scheduler,
             scaler=SCALER
         )

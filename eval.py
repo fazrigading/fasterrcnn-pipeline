@@ -169,7 +169,7 @@ if __name__ == '__main__':
         colors=None
     ):
         metric = MeanAveragePrecision(class_metrics=args['verbose'])
-        mcprc = MulticlassPrecisionRecallCurve(num_classes=len(classes)) # pr-curve feature
+        mcprc = MulticlassPrecisionRecallCurve(num_classes=NUM_CLASSES) # pr-curve feature
         n_threads = torch.get_num_threads()
         # FIXME remove this and make paste_masks_in_image run on the GPU
         torch.set_num_threads(1)
@@ -212,10 +212,22 @@ if __name__ == '__main__':
         metric_summary = metric.compute()
 
         # PR-CURVE COMPUTE
-        pred_scores = torch.cat([pred['scores'] for pred in preds], dim=0)
-        pred_labels = torch.cat([pred['labels'] for pred in preds], dim=0)
+        # Initialize an empty list for per-class scores
+        pred_scores_list = []
+
+        for pred in preds:
+            # pred['labels'] is of shape (num_boxes,)
+            # pred['scores'] is of shape (num_boxes,)
+            num_boxes = pred['labels'].shape[0]
+            # Create a one-hot tensor with zeros
+            one_hot = torch.zeros((num_boxes, NUM_CLASSES), dtype=pred['scores'].dtype, device=pred['scores'].device)
+            # Fill the predicted class column with the scores
+            one_hot.scatter_(1, pred['labels'].unsqueeze(1), pred['scores'].unsqueeze(1))
+            pred_scores_list.append(one_hot)
+
+        pred_scores = torch.cat(pred_scores_list, dim=0)
         true_labels = torch.cat([target_entry['labels'] for target_entry in target], dim=0)
-        mcprc.update(pred_labels, true_labels)
+        mcprc.update(pred_scores, true_labels)
         # precision, recall, thresholds = mcprc.compute() # Disabled because no purpose?
 
         # PR-CURVE PLOT

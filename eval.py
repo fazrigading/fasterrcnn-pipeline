@@ -212,6 +212,8 @@ if __name__ == '__main__':
         metric_summary = metric.compute()
 
         # PR-CURVE PLOT FEATURE
+        print("Preds: ", preds)
+        print("Target: ", target)
         # Update and compute the precision-recall curve
         for pred, tgt in zip(preds, target):
             mcprc.update(pred['scores'], tgt['labels'])

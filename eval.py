@@ -218,7 +218,8 @@ if __name__ == '__main__':
         precision, recall, thresholds = pr_curve_metric.compute()
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
         pr_curve_metric.plot(score=True, ax=ax)
-        fig.savefig(f"pr_curve.png", dpi=250)
+        plot_data_split = "test" if args['split'] == "test" else "val"
+        fig.savefig(f"pr_curve_{plot_data_split}.png", dpi=250)
         plt.close(fig)
 
         return metric_summary

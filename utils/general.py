@@ -151,7 +151,7 @@ def save_loss_plot(
     train_ax.set_xlabel(x_label)
     train_ax.set_ylabel(y_label)
     figure_1.savefig(f"{OUT_DIR}/{save_name}.png")
-    print('SAVING PLOTS COMPLETE...')
+    # print('SAVING PLOTS COMPLETE...')
 
 def save_mAP(OUT_DIR, map_05, map):
     """

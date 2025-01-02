@@ -211,10 +211,8 @@ if __name__ == '__main__':
         metric.update(preds, target)
         metric_summary = metric.compute()
 
-        print("preds labels length:", len(preds_labels))
-        print("targets labels length:", len(targets_labels))
-        print("preds length:", len(preds))
-        print("targets length:", len(target))
+        print("preds_labels\n", preds_labels)
+        print("targets_labels\n", targets_labels)
 
         # pr_curve = PrecisionRecallCurve(task='multiclass', num_classes=NUM_CLASSES)
         # precision, recall, _ = pr_curve(preds['labels'], preds['labels'])

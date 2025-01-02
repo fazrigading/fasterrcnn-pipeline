@@ -177,6 +177,7 @@ if __name__ == '__main__':
 
         target = []
         preds = []
+        preds_labels = []
         counter = 0
         for images, targets in tqdm(metric_logger.log_every(data_loader, 100, header), total=len(data_loader)):
             counter += 1
@@ -197,6 +198,8 @@ if __name__ == '__main__':
                 preds_dict['boxes'] = outputs[i]['boxes'].detach().cpu()
                 preds_dict['scores'] = outputs[i]['scores'].detach().cpu()
                 preds_dict['labels'] = outputs[i]['labels'].detach().cpu()
+                preds_labels.append(preds_dict['labels'])
+                targets_labels.append(true_dict['labels'])
                 preds.append(preds_dict)
                 target.append(true_dict)
             #####################################
@@ -206,6 +209,22 @@ if __name__ == '__main__':
         torch.set_num_threads(n_threads)
         metric.update(preds, target)
         metric_summary = metric.compute()
+
+        print("preds labels length:", len(preds_labels))
+        print("targets labels length:", len(targets_labels))
+        print("preds length:", len(preds))
+        print("targets length:", len(target))
+
+        # pr_curve = PrecisionRecallCurve(task='multiclass', num_classes=NUM_CLASSES)
+        # precision, recall, _ = pr_curve(preds['labels'], preds['labels'])
+        # plt.figure()
+        # plt.plot(recall, precision, marker='.', label='Precision-Recall Curve')
+        # plt.xlabel('Recall')
+        # plt.ylabel('Precision')
+        # plt.title('Precision-Recall Curve')
+        # plt.legend()
+        # plt.grid(True)
+        # plt.savefig('precision_recall_curve.png', dpi=250)
 
         return metric_summary
 

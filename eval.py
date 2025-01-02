@@ -178,6 +178,7 @@ if __name__ == '__main__':
         target = []
         preds = []
         preds_labels = []
+        targets_labels = []
         counter = 0
         for images, targets in tqdm(metric_logger.log_every(data_loader, 100, header), total=len(data_loader)):
             counter += 1

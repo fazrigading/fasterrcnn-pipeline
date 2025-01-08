@@ -1,0 +1,22 @@
+# Images and labels direcotry should be relative to train.py
+TRAIN_DIR_IMAGES: data/Ganoderma-8-3/train/
+TRAIN_DIR_LABELS: data/Ganoderma-8-3/train/
+VALID_DIR_IMAGES: data/Ganoderma-8-3/valid/
+VALID_DIR_LABELS: data/Ganoderma-8-3/valid/
+# Optional test data path. If given, test paths (data) will be used in
+# `eval.py`.
+TEST_DIR_IMAGES: data/Ganoderma-8-3/test/
+TEST_DIR_LABELS: data/Ganoderma-8-3/test/
+
+# Class names.
+CLASSES: [
+    '__background__',
+    'ganoderma',
+    'primordium'
+]
+
+# Number of classes (object classes + 1 for background class in Faster RCNN).
+NC: 3
+
+# Whether to save the predictions of the validation set while training.
+SAVE_VALID_PREDICTION_IMAGES: True

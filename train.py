@@ -118,6 +118,13 @@ def parse_opt():
         help='visualize transformed images fed to the network'
     )
     parser.add_argument(
+        '-pf', '--print-freq',
+        dest='print_freq',
+        type=int,
+        default=10,
+        help='print frequency of the training epoch'
+    )
+    parser.add_argument(
         '--mosaic', 
         default=0.0,
         type=float,
@@ -423,7 +430,7 @@ def main(args):
             DEVICE, 
             epoch, 
             train_loss_hist,
-            print_freq=1,
+            print_freq=args['print_freq'],
             scheduler=scheduler,
             scaler=SCALER
         )

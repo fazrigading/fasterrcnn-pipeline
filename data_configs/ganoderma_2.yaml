@@ -1,12 +1,12 @@
 # Images and labels direcotry should be relative to train.py
-TRAIN_DIR_IMAGES: data/Ganoderma-8-3/train/
-TRAIN_DIR_LABELS: data/Ganoderma-8-3/train/
-VALID_DIR_IMAGES: data/Ganoderma-8-3/valid/
-VALID_DIR_LABELS: data/Ganoderma-8-3/valid/
+TRAIN_DIR_IMAGES: data/Ganoderma-3-8/train/
+TRAIN_DIR_LABELS: data/Ganoderma-3-8/train/
+VALID_DIR_IMAGES: data/Ganoderma-3-8/valid/
+VALID_DIR_LABELS: data/Ganoderma-3-8/valid/
 # Optional test data path. If given, test paths (data) will be used in
 # `eval.py`.
-TEST_DIR_IMAGES: data/Ganoderma-8-3/test/
-TEST_DIR_LABELS: data/Ganoderma-8-3/test/
+TEST_DIR_IMAGES: data/Ganoderma-3-8/test/
+TEST_DIR_LABELS: data/Ganoderma-3-8/test/
 
 # Class names.
 CLASSES: [

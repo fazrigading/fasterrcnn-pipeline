@@ -98,8 +98,7 @@ def train_one_epoch(
             print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
                   f"Loss: {loss_value:.4f}, "
                   f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
-                  f"Time: {iter_time.avg:.4f}, "
-                  f"Data: {data_time.avg:.4f}")
+                  f"Time: {iter_time.avg:.4f}")
             if torch.cuda.is_available():
                 max_mem = torch.cuda.max_memory_allocated() / MB
                 print(f"Max Memory: {max_mem:.0f} MB")

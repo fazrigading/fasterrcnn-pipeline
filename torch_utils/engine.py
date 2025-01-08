@@ -96,15 +96,20 @@ def train_one_epoch(
 
         # Optionally, print progress information at a certain frequency
         if i % print_freq == 0:
-            print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
-                  f"Loss: {loss_value:.4f}, "
-                  f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
-                  f"Time: {iter_time.avg:.4f}")
             if torch.cuda.is_available():
                 max_mem = torch.cuda.max_memory_allocated() / MB
-                print(f"Max Memory: {max_mem:.0f} MB")
+                print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
+                      f"Loss: {loss_value:.4f}, "
+                      f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
+                      f"Time: {iter_time.avg:.4f}, "
+                      f"Max Memory: {max_mem:.0f} MB")
                 torch.cuda.reset_peak_memory_stats()  # Reset peak memory stats
-
+            else:
+                print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
+                      f"Loss: {loss_value:.4f}, "
+                      f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
+                      f"Time: {iter_time.avg:.4f}")
+                
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print(f"{header} Total time: {total_time_str} ({total_time / len(data_loader):.4f} s/it)")

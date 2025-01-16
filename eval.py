@@ -233,6 +233,9 @@ if __name__ == '__main__':
                 true_positive[cls] += tp
                 false_positive[cls] += fp
                 false_negative[cls] += fn
+
+        print("gt:", gt_labels)
+        print("pred:", pred_labels)
     
         # Calculate precision, recall, F1-Score
         precision = {cls: true_positive[cls] / (true_positive[cls] + false_positive[cls] + 1e-6) for cls in classes}
@@ -240,10 +243,10 @@ if __name__ == '__main__':
         f1_score = {cls: 2 * precision[cls] * recall[cls] / (precision[cls] + recall[cls] + 1e-6) for cls in classes}
     
         return {
-            'metric_summary': metric_summary,
             'precision': precision,
             'recall': recall,
-            'f1_score': f1_score
+            'f1_score': f1_score,
+            'metric': metric_summary
         }
 
     stats = evaluate(
@@ -254,7 +257,7 @@ if __name__ == '__main__':
     )
 
     print('\n')
-    pprint(stats)
+    # pprint(stats)
     if args['verbose']:
         total_classes = len(CLASSES)
         print('\n')
@@ -287,9 +290,9 @@ if __name__ == '__main__':
             class_counter = 0
             for i in range(0, total_classes-1, 1):
                 class_counter += 1
-                print(f"|{class_counter:<3} | {CLASSES[i+1]:<20} | {np.array(stats['map_per_class'][i]):.3f}{empty_string:<15}| {np.array(stats['mar_100_per_class'][i]):.3f}{empty_string:<15}|")
+                print(f"|{class_counter:<3} | {CLASSES[i+1]:<20} | {np.array(stats['metric']['map_per_class'][i]):.3f}{empty_string:<15}| {np.array(stats['metric']['mar_100_per_class'][i]):.3f}{empty_string:<15}|")
             print('-'*num_hyphens)
-            print(f"|Avg{empty_string:<23} | {np.array(stats['map']):.3f}{empty_string:<15}| {np.array(stats['mar_100']):.3f}{empty_string:<15}|")
+            print(f"|Avg{empty_string:<23} | {np.array(stats['metric']['map']):.3f}{empty_string:<15}| {np.array(stats['metric']['mar_100']):.3f}{empty_string:<15}|")
         else:
             print(f"{'Class':<15}{'Precision':<12}{'Recall':<12}{'F1-Score':<12}")
             print("-" * 45)

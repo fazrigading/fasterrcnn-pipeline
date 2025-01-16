@@ -19,6 +19,7 @@ import yaml
 import torchvision
 import time
 import numpy as np
+from collections import defaultdict
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 

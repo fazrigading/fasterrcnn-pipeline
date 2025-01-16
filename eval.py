@@ -216,14 +216,20 @@ if __name__ == '__main__':
         true_positive = defaultdict(int)
         false_positive = defaultdict(int)
         false_negative = defaultdict(int)
-    
+
+        # Compute TP, FP, FN for each class
         for t, p in zip(target, preds):
+            gt_labels = t['labels'].tolist()
+            pred_labels = p['labels'].tolist()
+    
             for cls in classes:
-                # Identify true positives, false positives, and false negatives
-                tp = ((p['labels'] == cls) & (t['labels'] == cls)).sum().item()
-                fp = ((p['labels'] == cls) & (t['labels'] != cls)).sum().item()
-                fn = ((p['labels'] != cls) & (t['labels'] == cls)).sum().item()
-                
+                # True Positives: Correctly predicted labels
+                tp = sum(1 for pred, gt in zip(pred_labels, gt_labels) if pred == cls and gt == cls)
+                # False Positives: Predicted as cls but not actually cls
+                fp = sum(1 for pred in pred_labels if pred == cls and pred not in gt_labels)
+                # False Negatives: Missed instances of cls in ground truth
+                fn = sum(1 for gt in gt_labels if gt == cls and gt not in pred_labels)
+    
                 true_positive[cls] += tp
                 false_positive[cls] += fp
                 false_negative[cls] += fn

@@ -234,8 +234,9 @@ if __name__ == '__main__':
                 false_positive[cls] += fp
                 false_negative[cls] += fn
 
-        print("gt:", gt_labels)
-        print("pred:", pred_labels)
+        print("tp:", true_positive)
+        print("fp:", false_positive)
+        print("fn:", false_negative)
     
         # Calculate precision, recall, F1-Score
         precision = {cls: true_positive[cls] / (true_positive[cls] + false_positive[cls] + 1e-6) for cls in classes}

@@ -415,7 +415,7 @@ def create_train_loader(
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        # shuffle=True,
+        shuffle=True,
         num_workers=num_workers,
         collate_fn=collate_fn,
         sampler=batch_sampler

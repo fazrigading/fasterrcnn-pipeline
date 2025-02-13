@@ -216,22 +216,23 @@ if __name__ == '__main__':
         for t, p in zip(target, preds):
             gt_labels = t['labels'].tolist()
             pred_labels = p['labels'].tolist()
+            print(gt_labels)
+            print(pred_labels)
     
             for cls in classes:
                 # True Positives: Correctly predicted labels
                 tp = sum(1 for pred, gt in zip(pred_labels, gt_labels) if pred == cls and gt == cls)
+                print(tp)
                 # False Positives: Predicted as cls but not actually cls
                 fp = sum(1 for pred in pred_labels if pred == cls and pred not in gt_labels)
+                print(fp)
                 # False Negatives: Missed instances of cls in ground truth
                 fn = sum(1 for gt in gt_labels if gt == cls and gt not in pred_labels)
-    
+                print(fp)
+                    
                 true_positive[cls] += tp
                 false_positive[cls] += fp
                 false_negative[cls] += fn
-
-        print("tp:", true_positive)
-        print("fp:", false_positive)
-        print("fn:", false_negative)
     
         # Calculate precision, recall, F1-Score
         precision = {cls: true_positive[cls] / (true_positive[cls] + false_positive[cls] + 1e-6) for cls in classes}

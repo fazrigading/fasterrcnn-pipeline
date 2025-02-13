@@ -17,6 +17,7 @@ import yaml
 import torchvision
 import time
 import numpy as np
+from collections import defaultdict
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -187,15 +188,17 @@ if __name__ == '__main__':
 
             #####################################
             for i in range(len(images)):
-                true_dict = dict()
-                preds_dict = dict()
-                true_dict['boxes'] = targets[i]['boxes'].detach().cpu()
-                true_dict['labels'] = targets[i]['labels'].detach().cpu()
-                preds_dict['boxes'] = outputs[i]['boxes'].detach().cpu()
-                preds_dict['scores'] = outputs[i]['scores'].detach().cpu()
-                preds_dict['labels'] = outputs[i]['labels'].detach().cpu()
-                preds.append(preds_dict)
+                true_dict = {
+                    'boxes': targets[i]['boxes'].detach().cpu(),
+                    'labels': targets[i]['labels'].detach().cpu()
+                }
+                pred_dict = {
+                    'boxes': outputs[i]['boxes'].detach().cpu(),
+                    'scores': outputs[i]['scores'].detach().cpu(),
+                    'labels': outputs[i]['labels'].detach().cpu()
+                }
                 target.append(true_dict)
+                preds.append(pred_dict)
             #####################################
             outputs = [{k: v.to(DEVICE) for k, v in t.items()} for t in outputs]
 
@@ -203,8 +206,44 @@ if __name__ == '__main__':
         torch.set_num_threads(n_threads)
         metric.update(preds, target)
         metric_summary = metric.compute()
+        # return metric_summary
+        # Manual Precision, Recall, F1 calculation
+        true_positive = defaultdict(int)
+        false_positive = defaultdict(int)
+        false_negative = defaultdict(int)
 
-        return metric_summary
+        # Compute TP, FP, FN for each class
+        for t, p in zip(target, preds):
+            gt_labels = t['labels'].tolist()
+            pred_labels = p['labels'].tolist()
+    
+            for cls in classes:
+                # True Positives: Correctly predicted labels
+                tp = sum(1 for pred, gt in zip(pred_labels, gt_labels) if pred == cls and gt == cls)
+                # False Positives: Predicted as cls but not actually cls
+                fp = sum(1 for pred in pred_labels if pred == cls and pred not in gt_labels)
+                # False Negatives: Missed instances of cls in ground truth
+                fn = sum(1 for gt in gt_labels if gt == cls and gt not in pred_labels)
+    
+                true_positive[cls] += tp
+                false_positive[cls] += fp
+                false_negative[cls] += fn
+
+        print("tp:", true_positive)
+        print("fp:", false_positive)
+        print("fn:", false_negative)
+    
+        # Calculate precision, recall, F1-Score
+        precision = {cls: true_positive[cls] / (true_positive[cls] + false_positive[cls] + 1e-6) for cls in classes}
+        recall = {cls: true_positive[cls] / (true_positive[cls] + false_negative[cls] + 1e-6) for cls in classes}
+        f1_score = {cls: 2 * precision[cls] * recall[cls] / (precision[cls] + recall[cls] + 1e-6) for cls in classes}
+    
+        return {
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1_score,
+            'metric': metric_summary
+        }
 
     stats = evaluate(
         model, 
@@ -214,25 +253,47 @@ if __name__ == '__main__':
     )
 
     print('\n')
-    pprint(stats)
+    # pprint(stats)
     if args['verbose']:
+        total_classes = len(CLASSES)
         print('\n')
         pprint(f"Classes: {CLASSES}")
         print('\n')
         print('AP / AR per class')
         empty_string = ''
-        if len(CLASSES) > 2: 
+        if total_classes > 2:
+            # Print class-wise Precision, Recall, F1-Score
+            print("\nClass-wise Metrics:")
+            print(f"{'Class':<15}{'Precision':<12}{'Recall':<12}{'F1-Score':<12}")
+            print("-" * 45)
+            p_values = []
+            r_values = []
+            f1_values = []
+            for cls in CLASSES:
+                print(f"{cls:<15}{stats['precision'][cls]:<12.3f}{stats['recall'][cls]:<12.3f}{stats['f1_score'][cls]:<12.3f}")
+                p_values.append(stats['precision'][cls])
+                r_values.append(stats['recall'][cls])
+                f1_values.append(stats['f1_score'][cls])
+            mean_p = sum(p_values)/len(p_values)
+            mean_r = sum(r_values)/len(r_values)
+            mean_f1 = sum(f1_values)/len(f1_values)
+            print(f"Mean/Avg{empty_string:<15} | {mean_p:<12.3f} | {mean_r:<12.3f} | {mean_f1:<12.3f}")
+            
             num_hyphens = 73
             print('-'*num_hyphens)
             print(f"|    | Class{empty_string:<16}| AP{empty_string:<18}| AR{empty_string:<18}|")
             print('-'*num_hyphens)
             class_counter = 0
-            for i in range(0, len(CLASSES)-1, 1):
+            for i in range(0, total_classes-1, 1):
                 class_counter += 1
-                print(f"|{class_counter:<3} | {CLASSES[i+1]:<20} | {np.array(stats['map_per_class'][i]):.3f}{empty_string:<15}| {np.array(stats['mar_100_per_class'][i]):.3f}{empty_string:<15}|")
+                print(f"|{class_counter:<3} | {CLASSES[i+1]:<20} | {np.array(stats['metric']['map_per_class'][i]):.3f}{empty_string:<15}| {np.array(stats['metric']['mar_100_per_class'][i]):.3f}{empty_string:<15}|")
             print('-'*num_hyphens)
-            print(f"|Avg{empty_string:<23} | {np.array(stats['map']):.3f}{empty_string:<15}| {np.array(stats['mar_100']):.3f}{empty_string:<15}|")
+            print(f"|Avg{empty_string:<23} | {np.array(stats['metric']['map']):.3f}{empty_string:<15}| {np.array(stats['metric']['mar_100']):.3f}{empty_string:<15}|")
         else:
+            print(f"{'Class':<15}{'Precision':<12}{'Recall':<12}{'F1-Score':<12}")
+            print("-" * 45)
+            for cls in CLASSES:
+                print(f"{cls:<15}{stats['precision'][cls]:<12.3f}{stats['recall'][cls]:<12.3f}{stats['f1_score'][cls]:<12.3f}")
             num_hyphens = 62
             print('-'*num_hyphens)
             print(f"|Class{empty_string:<10} | AP{empty_string:<18}| AR{empty_string:<18}|")

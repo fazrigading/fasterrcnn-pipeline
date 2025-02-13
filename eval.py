@@ -4,9 +4,7 @@ Run evaluation on a trained model to get mAP and class wise AP.
 USAGE:
 python eval.py --data data_configs/voc.yaml --split test --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
 """
-from datasets import (
-    create_valid_dataset, create_valid_loader
-)
+from datasets import create_valid_dataset, create_valid_loader
 from models.create_fasterrcnn_model import create_model
 from torch_utils import utils
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -170,18 +168,15 @@ if __name__ == '__main__':
         n_threads = torch.get_num_threads()
         # FIXME remove this and make paste_masks_in_image run on the GPU
         torch.set_num_threads(1)
-        cpu_device = torch.device("cpu")
         model.eval()
         metric_logger = utils.MetricLogger(delimiter="  ")
         header = "Test:"
 
         target = []
         preds = []
-        preds_labels = []
-        targets_labels = []
-        counter = 0
+        # counter = 0
         for images, targets in tqdm(metric_logger.log_every(data_loader, 100, header), total=len(data_loader)):
-            counter += 1
+            # counter += 1
             images = list(img.to(device) for img in images)
 
             if torch.cuda.is_available():
@@ -199,31 +194,15 @@ if __name__ == '__main__':
                 preds_dict['boxes'] = outputs[i]['boxes'].detach().cpu()
                 preds_dict['scores'] = outputs[i]['scores'].detach().cpu()
                 preds_dict['labels'] = outputs[i]['labels'].detach().cpu()
-                preds_labels.append(preds_dict['labels'])
-                targets_labels.append(true_dict['labels'])
                 preds.append(preds_dict)
                 target.append(true_dict)
             #####################################
-            outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+            outputs = [{k: v.to(DEVICE) for k, v in t.items()} for t in outputs]
 
         metric_logger.synchronize_between_processes()
         torch.set_num_threads(n_threads)
         metric.update(preds, target)
         metric_summary = metric.compute()
-
-        print("preds_labels\n", preds_labels)
-        print("targets_labels\n", targets_labels)
-
-        # pr_curve = PrecisionRecallCurve(task='multiclass', num_classes=NUM_CLASSES)
-        # precision, recall, _ = pr_curve(preds['labels'], preds['labels'])
-        # plt.figure()
-        # plt.plot(recall, precision, marker='.', label='Precision-Recall Curve')
-        # plt.xlabel('Recall')
-        # plt.ylabel('Precision')
-        # plt.title('Precision-Recall Curve')
-        # plt.legend()
-        # plt.grid(True)
-        # plt.savefig('precision_recall_curve.png', dpi=250)
 
         return metric_summary
 

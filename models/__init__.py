@@ -24,6 +24,17 @@ __all__ = [
     'fasterrcnn_squeezenet1_1',
     'fasterrcnn_vitdet',
     'fasterrcnn_vitdet_tiny',
+    'fasterrcnn_mobilevit_xxs',
     'fasterrcnn_regnet_y_400mf',
-    'fasterrcnn_vgg16'
+    'fasterrcnn_vgg16',
+    'fasterrcnn_dinov3_convnext_tiny',
+    'fasterrcnn_dinov3_vits16',
+    'fasterrcnn_dinov3_convnext_tiny_multifeat',
+    'fasterrcnn_dinov3_vits16plus',
+    'fasterrcnn_dinov3_vitb16',
+    'fasterrcnn_dinov3_vitl16',
+    'fasterrcnn_dinov3_vith16plus',
+    'fasterrcnn_dinov3_convnext_small',
+    'fasterrcnn_dinov3_convnext_base',
+    'fasterrcnn_dinov3_convnext_large'
 ]

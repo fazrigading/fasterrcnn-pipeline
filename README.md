@@ -1,5 +1,7 @@
 # A Simple Pipeline to Train PyTorch FasterRCNN Model
 
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+
 
 
 Train PyTorch FasterRCNN models easily on any custom dataset. Choose between official PyTorch models trained on COCO dataset, or choose any backbone from Torchvision classification models, or even write your own custom backbones. 
@@ -15,6 +17,8 @@ Train PyTorch FasterRCNN models easily on any custom dataset. Choose between off
 * [Find blog posts/tutorials on DebuggerCafe](#Tutorials)
 
 ## Updates
+
+* **June 6 2025:** Support for both Pascal VOC and YOLO text file annotation type during training. Check [custom training section](#Train-on-Custom-Dataset)
 
 * **August 28 2024:** SAHI image inference for all pretrained Torchvision Faster RCNN models integrated. [Find the script here](https://github.com/sovit-123/fasterrcnn-pytorch-training-pipeline/blob/main/sahi_inference.py).
 
@@ -54,29 +58,32 @@ Train PyTorch FasterRCNN models easily on any custom dataset. Choose between off
    git clone https://github.com/sovit-123/fastercnn-pytorch-training-pipeline.git
    ```
 
-2. Install requirements.
+   Optional: Initialize DINOv3 submodule for training DINOv3 Faster RCNN models. 
 
-   1. **Method 1**: If you have CUDA and cuDNN set up already, do this in your environment of choice.
+   ```bash
+   git submodule update --init
+   ```
 
-      ```bash
-      pip install -r requirements.txt
-      ```
+2. Install requirements as per GPU.
+   Install requirements on **RTX 30/40** (**Ampere and Ada Lovelace**) series and **T4/P100 GPUs**.
 
-   2. **Method 2**: If you want to install PyTorch with CUDA Toolkit in your environment of choice.
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-      ```bash
-      conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
-      ```
+**OR**	
 
-      OR
+Install requirements for **RTX 50** series and **Blackwell GPUs**. First install PyTorch >= 2.8 with CUDA >= 12.9
 
-      ```bash
-      conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
-      ```
+```
+pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129
+```
 
-      OR install the version with CUDA support as per your choice from **[here](https://pytorch.org/get-started/locally/)**.
+Install rest of the requirements
 
-      Then install the remaining **[requirements](https://github.com/sovit-123/fasterrcnn-pytorch-training-pipeline/blob/main/requirements.txt)**.
+```
+pip install -r requirements_blackwell.txt
+```
 
 ## Setup on Windows
 
@@ -98,21 +105,49 @@ Train PyTorch FasterRCNN models easily on any custom dataset. Choose between off
    git clone https://github.com/sovit-123/fastercnn-pytorch-training-pipeline.git
    ```
 
-4. Install PyTorch with CUDA support.
+4. Then install the remaining **[requirements](https://github.com/sovit-123/pytorch-efficientdet-api/blob/main/requirements.txt)** except for `pycocotools`.
+
+   Install requirements on **RTX 30/40** (**Ampere and Ada Lovelace**) series and **T4/P100 GPUs**.
 
    ```bash
-   conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+   pip install -r requirements.txt
    ```
 
-   OR
+**OR**	
 
-   ```bash
-   conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
-   ```
+Install requirements for **RTX 50** series and **Blackwell GPUs**. First install PyTorch >= 2.8 with CUDA >= 12.9
 
-   OR install the version with CUDA support as per your choice from **[here](https://pytorch.org/get-started/locally/)**.
+```
+pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129
+```
 
-   Then install the remaining **[requirements](https://github.com/sovit-123/pytorch-efficientdet-api/blob/main/requirements.txt)** except for `pycocotools`.
+Install rest of the requirements (apart from `pycocotools`)
+
+```
+pip install -r requirements_blackwell.txt
+```
+
+## Using Custom Weights
+
+Some models like **DINOv3 based Faster RCNN** models require the pretrained weights to be present locally. Put all the DINOv3 backbone weights in the `weights` directory. The respective model files will load them from the directory.
+
+You can download the weights by [filling the form here](https://github.com/facebookresearch/dinov3/tree/main?tab=readme-ov-file#pretrained-models).
+
+For example, for the FasterRCNN DINOv3 ConvNext Tiny model (`models/fasterrcnn_dinov3_convnext_tiny.py`) the weights are loaded using the following syntax with relative path.
+
+```python
+# Relative to parent fasterrcnn directory.
+REPO_DIR = 'dinov3'
+# Relative to parent fasterrcnn directory or the absolute path.
+WEIGHTS_URL = 'weights/dinov3_convnext_tiny_pretrain_lvd1689m-21b726bb.pth'
+
+self.backbone = torch.hub.load(
+    REPO_DIR, 
+    "dinov3_convnext_tiny", 
+    source='local', 
+    weights=WEIGHTS_URL
+)
+```
 
 ## Train on Custom Dataset
 
@@ -152,15 +187,19 @@ Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pa
 └── train.py
 ```
 
-The content of the `ganoderma.yaml` should be the following:
+The content of the `smoke.yaml` should be the following. The folder containing the annotation files can either point to **Pascal VOC XML** files or **YOLO text labels** folder. The images and labels (for both Pascal VOC XML and YOLO text files) can be either in the same folder or in different folders because the image and annotation files are matched based on the file names during dataset preparation. 
+
+**If the data config file (shown below) points to Pascal VOC XML annotations, the `CLASSES` field can contain the class names in any order after the `__background__` class. If the data config file points to YOLO text file annotation folder, the `CLASSES` should contain the class names in the order as present in the YOLO dataset `data.yaml` file. This is necessary to maintain indexing order during training.**
+
+![](readme_images/fasterrcnn_yolo_config_example.png)
 
 ```yaml
 # Images and labels direcotry should be relative to train.py
-TRAIN_DIR_IMAGES: data/train
-TRAIN_DIR_LABELS: data/train
+TRAIN_DIR_IMAGES: ../../xml_od_data/smoke_pascal_voc/archive/train/images
+TRAIN_DIR_LABELS: ../../xml_od_data/smoke_pascal_voc/archive/train/annotations # This can contain .xml or .txt files
 # VALID_DIR should be relative to train.py
-VALID_DIR_IMAGES: data/val
-VALID_DIR_LABELS: data/val
+VALID_DIR_IMAGES: ../../xml_od_data/smoke_pascal_voc/archive/valid/images
+VALID_DIR_LABELS: ../../xml_od_data/smoke_pascal_voc/archive/valid/annotations # This can contain .xml or .txt files
 
 # Class names.
 CLASSES: [
@@ -181,14 +220,16 @@ Next, to start the training, you can use the following command.
 
 **Command format:**
 
+During training, we need to provide a `--label-type` argument which should be either `yolo` or `pascal_voc` depending on the annotation folder path in the data configuration file above. Default is `pascal_voc`
+
 ```bash
-python train.py --data <path to the data config YAML file> --epochs 100 --model <model name (defaults to fasterrcnn_resnet50)> --name <folder name inside output/training/> --batch 16
+python train.py --data <path to the data config YAML file> --epochs 100 --model <model name (defaults to fasterrcnn_resnet50)> --name <folder name inside output/training/> --batch 16 --label-type <pascal_voc or yolo>
 ```
 
 **In this case, the exact command would be:**
 
 ```bash
-python train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+python train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16 --label-type pascal_voc
 ```
 
 **The terimal output should be similar to the following:**

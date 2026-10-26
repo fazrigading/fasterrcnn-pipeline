@@ -217,6 +217,19 @@ def parse_opt():
               --project-dir will be named if not already present',
         type=str
     )
+    parser.add_argument(
+        '--label-type',
+        dest='label_type',
+        default='pascal_voc',
+        choices=['pascal_voc', 'yolo'],
+        help='label files type, you can either Pascal VOC XML type or, \
+              yolo txt type label files'
+    )
+    parser.add_argument(
+        '--optimizer',
+        default=None,
+        choices=['SGD', 'AdamW']
+    )
 
     args = vars(parser.parse_args())
     return args
@@ -267,14 +280,16 @@ def main(args):
         CLASSES,
         use_train_aug=args['use_train_aug'],
         mosaic=args['mosaic'],
-        square_training=args['square_training']
+        square_training=args['square_training'],
+        label_type=args['label_type']
     )
     valid_dataset = create_valid_dataset(
         VALID_DIR_IMAGES, 
         VALID_DIR_LABELS, 
         IMAGE_SIZE, 
         CLASSES,
-        square_training=args['square_training']
+        square_training=args['square_training'],
+        label_type=args['label_type']
     )
     print('Creating data loaders')
     if args['distributed']:
@@ -393,8 +408,17 @@ def main(args):
     # Get the model parameters.
     params = [p for p in model.parameters() if p.requires_grad]
     # Define the optimizer.
-    optimizer = torch.optim.SGD(params, lr=args['lr'], momentum=0.9, nesterov=True)
-    # optimizer = torch.optim.AdamW(params, lr=0.0001, weight_decay=0.0005)
+
+    if args['optimizer'] is not None:
+        optimizer = getattr(torch.optim, args['optimizer'])(params, lr=args['lr'], momentum=0.9, nesterov=True)
+        print(f"Using {optimizer} for {args['model']}")
+    else:
+        if 'dinov3' in args['model']:
+            optimizer = torch.optim.AdamW(params, lr=args['lr'])
+            print(f"Using {optimizer} for {args['model']}")
+        else:
+            optimizer = torch.optim.SGD(params, lr=args['lr'], momentum=0.9, nesterov=True)
+            print(f"Using {optimizer} for {args['model']}")
     if args['resume_training']: 
         # LOAD THE OPTIMIZER STATE DICTIONARY FROM THE CHECKPOINT.
         print('Loading optimizer state dictionary...')

@@ -1,5 +1,5 @@
 # Base-------------------------------------
-albumentations==1.1.0
+albumentations==2.0.8
 ipython
 jupyter
 matplotlib
@@ -10,8 +10,8 @@ PyYAML
 scikit-image
 scikit-learn
 scipy
-torch>=1.12.0
-torchvision>=0.13.0
+torch==2.7.0
+torchvision==0.22.0
 numpy
 protobuf<=3.20.1
 pandas
@@ -25,14 +25,14 @@ tensorboard
 torchinfo
 
 # Extras-----------------------------------
-pycocotools>=2.0.2
-setuptools==59.5.0
+pycocotools==2.0.8
+setuptools==80.9.0
 torchmetrics # Evaluation
 
 # SAHI inference
 sahi
 
 # Export-----------------------------------
-# onnxruntime==1.15 # CPU execution.
-# onnx==1.12.0
-# onnxruntime-gpu==1.15 # GPU execution. [CUDA 11.8]. For CUDA 12.2 install onnxruntime-gpu==1.17
+# onnx==1.18.0
+# onnxruntime==1.22.0 # CPU execution.
+# onnxruntime-gpu==1.22.0 # GPU execution. [1.22.x for CUDA 12.x]

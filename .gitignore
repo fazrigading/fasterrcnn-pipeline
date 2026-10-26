@@ -8,7 +8,7 @@
 *__pycache__/
 
 # Custom weights folder (mainly for testing).
-# weights/
+weights/
 
 # Weights and Biases
 wandb/*

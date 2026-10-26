@@ -5,7 +5,6 @@ import datetime
 from tqdm import tqdm
 
 import torch
-import torchvision.models.detection.mask_rcnn
 from torch_utils import utils
 from torch_utils.coco_eval import CocoEvaluator
 from torch_utils.coco_utils import get_coco_api_from_dataset
@@ -24,6 +23,8 @@ def train_one_epoch(
     scheduler=None
 ):
     model.train()
+    metric_logger = utils.MetricLogger(delimiter="  ")
+    metric_logger.add_meter("lr", utils.SmoothedValue(window_size=1, fmt="{value:.6f}"))
     header = f"\nEpoch: [{epoch}]"
 
     # Lists to store batch losses
@@ -46,20 +47,24 @@ def train_one_epoch(
     end = time.time()
     iter_time = utils.SmoothedValue(fmt="{avg:.4f}")
     MB = 1024.0 * 1024.0
-
-    # Use tqdm to create a progress bar with additional logging
-    for i, (images, targets) in enumerate(data_loader):
-        
-        images = [image.to(device) for image in images]
+    
+    step_counter = 0
+    # AMP Autocast does not accepts torch deivce, string only.
+    amp_device = 'cuda' if device == 'cuda' else 'cpu'
+    for images, targets in metric_logger.log_every(data_loader, print_freq, header):
+        step_counter += 1
+        images = list(image.to(device) for image in images)
         targets = [{k: v.to(device).to(torch.int64) for k, v in t.items()} for t in targets]
 
-        with torch.amp.autocast('cuda', enabled=scaler is not None):
+
+        with torch.amp.autocast(device_type=amp_device, enabled=scaler is not None):
             loss_dict = model(images, targets)
             losses = sum(loss for loss in loss_dict.values())
 
         # Reduce losses for logging
         loss_dict_reduced = utils.reduce_dict(loss_dict)
         losses_reduced = sum(loss for loss in loss_dict_reduced.values())
+        
         loss_value = losses_reduced.item()
 
         if not math.isfinite(loss_value):
@@ -79,6 +84,9 @@ def train_one_epoch(
         if lr_scheduler is not None:
             lr_scheduler.step()
 
+        metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
+        metric_logger.update(lr=optimizer.param_groups[0]["lr"])
+        
         # Update lists with loss values
         batch_loss_list.append(loss_value)
         batch_loss_cls_list.append(loss_dict_reduced['loss_classifier'].detach().cpu())
@@ -88,24 +96,24 @@ def train_one_epoch(
         train_loss_hist.send(loss_value)
 
         if scheduler is not None:
-            scheduler.step(epoch + (i / len(data_loader)))
+            scheduler.step(epoch + (step_counter / len(data_loader)))
 
         # Update iteration time
         iter_time.update(time.time() - end)
         end = time.time()
 
         # Optionally, print progress information at a certain frequency
-        if i % print_freq == 0:
+        if step_counter % print_freq == 0:
             if torch.cuda.is_available():
                 max_mem = torch.cuda.max_memory_allocated() / MB
-                print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
+                print(f"Epoch: [{epoch}], Iteration: [{step_counter}/{len(data_loader)}], "
                       f"Loss: {loss_value:.4f}, "
                       f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
                       f"Time: {iter_time.avg:.4f}, "
                       f"Max Memory: {max_mem:.0f} MB")
                 torch.cuda.reset_peak_memory_stats()  # Reset peak memory stats
             else:
-                print(f"Epoch: [{epoch}], Iteration: [{i}/{len(data_loader)}], "
+                print(f"Epoch: [{epoch}], Iteration: [{step_counter}/{len(data_loader)}], "
                       f"Loss: {loss_value:.4f}, "
                       f"LR: {optimizer.param_groups[0]['lr']:.6f}, "
                       f"Time: {iter_time.avg:.4f}")
@@ -115,12 +123,14 @@ def train_one_epoch(
     print(f"{header} Total time: {total_time_str} ({total_time / len(data_loader):.4f} s/it)")
 
     return (
+        metric_logger,
         batch_loss_list, 
         batch_loss_cls_list, 
         batch_loss_box_reg_list, 
         batch_loss_objectness_list, 
         batch_loss_rpn_list
     )
+
 
 def _get_iou_types(model):
     model_without_ddp = model
